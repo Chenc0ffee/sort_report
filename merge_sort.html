@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>合併排序法</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>合併排序法</h1>
+        <p>輸入一串數字（用逗號分隔），點擊排序按鈕來執行合併排序。</p>
+        <input type="text" id="inputArray" placeholder="例如: 5,3,8,4,2" value="5,3,8,4,2">
+        <button onclick="mergeSortHandler()">排序</button>
+        <div id="output"></div>
+    </div>
+
+    <script>
+        function mergeSortHandler() {
+            const input = document.getElementById('inputArray').value;
+            const arr = input.split(',').map(num => parseInt(num.trim())).filter(num => !isNaN(num));
+            const output = document.getElementById('output');
+
+            if (arr.length === 0) {
+                output.innerHTML = '請輸入有效的數字。';
+                return;
+            }
+
+            output.innerHTML = '<p>原始陣列: ' + arr.join(', ') + '</p>';
+            const sorted = mergeSort(arr);
+            output.innerHTML += '<p>排序後陣列: ' + sorted.join(', ') + '</p>';
+        }
+
+        function mergeSort(array) {
+            if (array.length <= 1) {
+                return array;
+            }
+
+            const mid = Math.floor(array.length / 2);
+            const left = array.slice(0, mid);
+            const right = array.slice(mid);
+
+            return merge(mergeSort(left), mergeSort(right));
+        }
+
+        function merge(left, right) {
+            const result = [];
+            let i = 0;
+            let j = 0;
+
+            while (i < left.length && j < right.length) {
+                if (left[i] <= right[j]) {
+                    result.push(left[i]);
+                    i++;
+                } else {
+                    result.push(right[j]);
+                    j++;
+                }
+            }
+
+            return result.concat(left.slice(i)).concat(right.slice(j));
+        }
+    </script>
+</body>
+</html>
