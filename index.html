@@ -1,1 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorting Visualizer</title>
+    <style>
+        :root { --primary: #3498db; --success: #2ecc71; --danger: #e74c3c; --warning: #f1c40f; --bg: #121212; }
+        body { font-family: sans-serif; background: var(--bg); color: white; margin: 0; overflow: hidden; }
+        .page { display: none; height: 100vh; width: 100vw; flex-direction: column; align-items: center; justify-content: center; }
+        .active { display: flex; }
+        .menu-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 15px; margin-top: 20px; }
+        @media (min-width: 600px) { .menu-grid { grid-template-columns: repeat(2, 1fr); } }
+        .menu-btn { padding: 15px 30px; font-size: 1rem; cursor: pointer; background: transparent; border: 1px solid var(--primary); color: white; border-radius: 8px; transition: 0.3s; }
+        .menu-btn:hover { background: var(--primary); }
+        .visual-container { display: flex; align-items: flex-end; height: 350px; gap: 3px; margin: 40px 0; width: 90%; max-width: 800px; border-bottom: 2px solid #333; }
+        .bar { flex: 1; background-color: var(--primary); }
+        .nav-controls { position: absolute; top: 20px; left: 20px; }
+        .action-controls { margin-top: 20px; }
+        .btn { padding: 10px 20px; cursor: pointer; border: none; border-radius: 4px; color: white; font-weight: bold; }
+        .btn-home { background: #444; }
+        .btn-start { background: var(--success); }
+        .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    </style>
+</head>
+<body>
 
+    <div id="homePage" class="page active">
+        <h1>Sorting Visualizer</h1>
+        <div class="menu-grid">
+            <button class="menu-btn" onclick="goToSort('Bubble')">氣泡排序法</button>
+            <button class="menu-btn" onclick="goToSort('Selection')">選擇排序法</button>
+            <button class="menu-btn" onclick="goToSort('Insertion')">插入排序法</button>
+            <button class="menu-btn" onclick="goToSort('Merge')">合併排序法</button>
+            <button class="menu-btn" onclick="goToSort('Heap')">堆積排序法</button>
+        </div>
+    </div>
+
+    <div id="sortPage" class="page">
+        <div class="nav-controls">
+            <button class="btn btn-home" id="backBtn" onclick="goHome()">回首頁</button>
+        </div>
+        <h2 id="sortTitle">排序法</h2>
+        <div class="visual-container" id="visualizer"></div>
+        <div class="action-controls">
+            <button class="btn btn-start" id="startBtn" onclick="runAnimation()">開始排序</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSort = "";
+        let array = [];
+        const container = document.getElementById('visualizer');
+        const startBtn = document.getElementById('startBtn');
+        const backBtn = document.getElementById('backBtn');
+        const count = 40;
+        const speed = 15;
+
+        function goToSort(type) {
+            currentSort = type;
+            document.getElementById('homePage').classList.remove('active');
+            document.getElementById('sortPage').classList.add('active');
+            document.getElementById('sortTitle').innerText = type + " Sort";
+            resetArray();
+        }
+
+        function goHome() {
+            document.getElementById('sortPage').classList.remove('active');
+            document.getElementById('homePage').classList.add('active');
+        }
+
+        function resetArray() {
+            array = [];
+            container.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                const val = Math.floor(Math.random() * 300) + 10;
+                array.push(val);
+                const bar = document.createElement('div');
+                bar.classList.add('bar');
+                bar.style.height = `${val}px`;
+                container.appendChild(bar);
+            }
+            startBtn.disabled = false;
+            backBtn.disabled = false;
+        }
+
+        const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+
+        async function runAnimation() {
+            startBtn.disabled = true;
+            backBtn.disabled = true;
+            const bars = document.getElementsByClassName('bar');
+            
+            if (currentSort === 'Bubble') await bubbleSort(bars);
+            else if (currentSort === 'Selection') await selectionSort(bars);
+            else if (currentSort === 'Insertion') await insertionSort(bars);
+            else if (currentSort === 'Merge') await mergeSort(bars);
+            else if (currentSort === 'Heap') await heapSort(bars);
+            
+            for(let bar of bars) bar.style.backgroundColor = var(--success);
+            backBtn.disabled = false;
+        }
+
+        async function bubbleSort(bars) {
+            for (let i = 0; i < array.length; i++) {
+                for (let j = 0; j < array.length - i - 1; j++) {
+                    bars[j].style.backgroundColor = "#e74c3c";
+                    bars[j+1].style.backgroundColor = "#e74c3c";
+                    await sleep(speed);
+                    if (array[j] > array[j+1]) {
+                        [array[j], array[j+1]] = [array[j+1], array[j]];
+                        bars[j].style.height = `${array[j]}px`;
+                        bars[j+1].style.height = `${array[j+1]}px`;
+                    }
+                    bars[j].style.backgroundColor = "#3498db";
+                    bars[j+1].style.backgroundColor = "#3498db";
+                }
+                bars[array.length - i - 1].style.backgroundColor = "#2ecc71";
+            }
+        }
+
+        async function selectionSort(bars) {
+            for (let i = 0; i < array.length; i++) {
+                let min = i;
+                bars[i].style.backgroundColor = "#f1c40f";
+                for (let j = i + 1; j < array.length; j++) {
+                    bars[j].style.backgroundColor = "#e74c3c";
+                    await sleep(speed);
+                    if (array[j] < array[min]) {
+                        if (min !== i) bars[min].style.backgroundColor = "#3498db";
+                        min = j;
+                        bars[min].style.backgroundColor = "#f1c40f";
+                    } else {
+                        bars[j].style.backgroundColor = "#3498db";
+                    }
+                }
+                [array[i], array[min]] = [array[min], array[i]];
+                bars[i].style.height = `${array[i]}px`;
+                bars[min].style.height = `${array[min]}px`;
+                bars[min].style.backgroundColor = "#3498db";
+                bars[i].style.backgroundColor = "#2ecc71";
+            }
+        }
+
+        async function insertionSort(bars) {
+            for (let i = 1; i < array.length; i++) {
+                let key = array[i];
+                let j = i - 1;
+                bars[i].style.backgroundColor = "#f1c40f";
+                await sleep(speed);
+                while (j >= 0 && array[j] > key) {
+                    bars[j].style.backgroundColor = "#e74c3c";
+                    array[j + 1] = array[j];
+                    bars[j + 1].style.height = `${array[j + 1]}px`;
+                    await sleep(speed);
+                    bars[j].style.backgroundColor = "#3498db";
+                    j--;
+                }
+                array[j + 1] = key;
+                bars[j + 1].style.height = `${key}px`;
+                for(let k=0; k<=i; k++) bars[k].style.backgroundColor = "#2ecc71";
+            }
+        }
+
+        async function mergeSort(bars) {
+            let n = array.length;
+            for (let size = 1; size < n; size *= 2) {
+                for (let left = 0; left < n; left += 2 * size) {
+                    let mid = Math.min(left + size, n);
+                    let right = Math.min(left + 2 * size, n);
+                    await merge(bars, left, mid, right);
+                }
+            }
+        }
+
+        async function merge(bars, l, m, r) {
+            let leftArr = array.slice(l, m);
+            let rightArr = array.slice(m, r);
+            let i = 0, j = 0, k = l;
+            while (i < leftArr.length && j < rightArr.length) {
+                await sleep(speed);
+                if (leftArr[i] <= rightArr[j]) {
+                    array[k] = leftArr[i++];
+                } else {
+                    array[k] = rightArr[j++];
+                }
+                bars[k].style.height = `${array[k]}px`;
+                bars[k].style.backgroundColor = "#e74c3c";
+                k++;
+            }
+            while (i < leftArr.length) {
+                await sleep(speed);
+                array[k] = leftArr[i++];
+                bars[k].style.height = `${array[k]}px`;
+                bars[k].style.backgroundColor = "#e74c3c";
+                k++;
+            }
+            while (j < rightArr.length) {
+                await sleep(speed);
+                array[k] = rightArr[j++];
+                bars[k].style.height = `${array[k]}px`;
+                bars[k].style.backgroundColor = "#e74c3c";
+                k++;
+            }
+            for (let x = l; x < r; x++) bars[x].style.backgroundColor = "#2ecc71";
+        }
+
+        async function heapSort(bars) {
+            let n = array.length;
+            for (let i = Math.floor(n / 2) - 1; i >= 0; i--) await heapify(bars, n, i);
+            for (let i = n - 1; i > 0; i--) {
+                [array[0], array[i]] = [array[i], array[0]];
+                bars[0].style.height = `${array[0]}px`;
+                bars[i].style.height = `${array[i]}px`;
+                bars[i].style.backgroundColor = "#2ecc71";
+                await sleep(speed);
+                await heapify(bars, i, 0);
+            }
+            bars[0].style.backgroundColor = "#2ecc71";
+        }
+
+        async function heapify(bars, n, i) {
+            let largest = i;
+            let l = 2 * i + 1;
+            let r = 2 * i + 2;
+            if (l < n && array[l] > array[largest]) largest = l;
+            if (r < n && array[r] > array[largest]) largest = r;
+            if (largest !== i) {
+                [array[i], array[largest]] = [array[largest], array[i]];
+                bars[i].style.height = `${array[i]}px`;
+                bars[largest].style.height = `${array[largest]}px`;
+                bars[i].style.backgroundColor = "#e74c3c";
+                await sleep(speed);
+                bars[i].style.backgroundColor = "#3498db";
+                await heapify(bars, n, largest);
+            }
+        }
+    </script>
+</body>
+</html>
