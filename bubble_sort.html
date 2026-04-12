@@ -3,71 +3,230 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>氣泡排序法</title>
+    <title>氣泡排序法動畫</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+            background-color: #f5f5f5;
         }
         .container {
-            max-width: 600px;
+            max-width: 700px;
             margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .controls {
+            margin: 15px 0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        input[type="text"] {
+            padding: 8px;
+            font-size: 14px;
+            width: 200px;
         }
         button {
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 8px 16px;
+            font-size: 14px;
             cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
         }
-        #output {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .visualization {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 300px;
             background-color: #f9f9f9;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            padding: 20px;
+            margin: 20px 0;
+            gap: 5px;
+        }
+        .bar {
+            background-color: #4CAF50;
+            border-radius: 4px;
+            transition: all 0.1s;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            min-width: 30px;
+            flex: 1;
+        }
+        .bar.comparing {
+            background-color: #FF9800;
+        }
+        .bar.sorted {
+            background-color: #2196F3;
+        }
+        .info {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>氣泡排序法</h1>
-        <p>輸入一串數字（用逗號分隔），點擊排序按鈕來執行氣泡排序。</p>
-        <input type="text" id="inputArray" placeholder="例如: 5,3,8,4,2" value="5,3,8,4,2">
-        <button onclick="bubbleSort()">排序</button>
-        <div id="output"></div>
+        <h1>氣泡排序法動畫</h1>
+        <div class="controls">
+            <input type="text" id="inputArray" placeholder="例如: 5,3,8,4,2" value="5,3,8,4,2">
+            <button onclick="startSort()">開始排序</button>
+            <button id="pauseBtn" onclick="togglePause()" disabled>暫停</button>
+            <button onclick="resetSort()" disabled id="resetBtn">重置</button>
+            <div class="speed-control">
+                <label>速度:</label>
+                <input type="range" id="speedSlider" min="10" max="500" value="100" step="10">
+            </div>
+        </div>
+        <div class="visualization" id="visualization"></div>
+        <div class="info" id="info">點擊「開始排序」開始動畫</div>
     </div>
 
     <script>
-        function bubbleSort() {
-            // 獲取輸入值
+        let arr = [];
+        let isRunning = false;
+        let isPaused = false;
+        const maxVal = 100;
+
+        function startSort() {
             const input = document.getElementById('inputArray').value;
-            const arr = input.split(',').map(num => parseInt(num.trim())).filter(num => !isNaN(num));
+            arr = input.split(',').map(num => parseInt(num.trim())).filter(num => !isNaN(num));
             
             if (arr.length === 0) {
-                document.getElementById('output').innerHTML = '請輸入有效的數字。';
+                alert('請輸入有效的數字。');
                 return;
             }
 
-            // 顯示原始陣列
-            document.getElementById('output').innerHTML = '<p>原始陣列: ' + arr.join(', ') + '</p>';
+            isRunning = true;
+            isPaused = false;
+            document.getElementById('pauseBtn').disabled = false;
+            document.getElementById('resetBtn').disabled = false;
+            document.querySelector('input[type="text"]').disabled = true;
+            document.querySelector('button:nth-of-type(1)').disabled = true;
+            
+            bubbleSortAnimated();
+        }
 
-            // 氣泡排序實現
+        async function bubbleSortAnimated() {
             let n = arr.length;
             let swapped;
-            do {
+            let comparisons = 0;
+            let swaps = 0;
+
+            for (let i = 0; i < n - 1 && isRunning; i++) {
                 swapped = false;
-                for (let i = 0; i < n - 1; i++) {
-                    if (arr[i] > arr[i + 1]) {
-                        // 交換元素
-                        let temp = arr[i];
-                        arr[i] = arr[i + 1];
-                        arr[i + 1] = temp;
+                for (let j = 0; j < n - i - 1 && isRunning; j++) {
+                    while (isPaused) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+
+                    // 高亮比較的元素
+                    highlight(j, j + 1, 'comparing');
+                    comparisons++;
+
+                    await sleep();
+
+                    if (arr[j] > arr[j + 1]) {
+                        [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+                        swaps++;
                         swapped = true;
                     }
-                }
-                n--; // 減少比較次數，因為最後一個元素已經是最大的
-            } while (swapped);
 
-            // 顯示排序後的陣列
-            document.getElementById('output').innerHTML += '<p>排序後陣列: ' + arr.join(', ') + '</p>';
+                    render();
+                }
+
+                // 標記已排序的元素
+                for (let k = n - i; k < n; k++) {
+                    highlight(k, k, 'sorted');
+                }
+
+                if (!swapped) break;
+            }
+
+            if (isRunning) {
+                // 標記全部為已排序
+                for (let i = 0; i < arr.length; i++) {
+                    highlight(i, i, 'sorted');
+                }
+                render();
+                document.getElementById('info').innerText = `排序完成！比較次數: ${comparisons}, 交換次數: ${swaps}`;
+                isRunning = false;
+                document.getElementById('pauseBtn').disabled = true;
+            }
+        }
+
+        function highlight(start, end, className) {
+            const bars = document.querySelectorAll('.bar');
+            bars.forEach((bar, index) => {
+                bar.classList.remove('comparing', 'sorted');
+                if (index >= start && index <= end) {
+                    bar.classList.add(className);
+                }
+            });
+        }
+
+        function render() {
+            const viz = document.getElementById('visualization');
+            viz.innerHTML = '';
+            const maxNum = Math.max(...arr);
+
+            arr.forEach((num) => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = (num / maxNum) * 250 + 'px';
+                bar.textContent = num;
+                viz.appendChild(bar);
+            });
+        }
+
+        function sleep() {
+            const speed = parseInt(document.getElementById('speedSlider').value);
+            return new Promise(resolve => setTimeout(resolve, 510 - speed));
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+            document.getElementById('pauseBtn').innerText = isPaused ? '繼續' : '暫停';
+        }
+
+        function resetSort() {
+            isRunning = false;
+            isPaused = false;
+            document.getElementById('pauseBtn').innerText = '暫停';
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('resetBtn').disabled = true;
+            document.querySelector('input[type="text"]').disabled = false;
+            document.querySelector('button:nth-of-type(1)').disabled = false;
+            document.getElementById('visualization').innerHTML = '';
+            document.getElementById('info').innerText = '點擊「開始排序」開始動畫';
         }
     </script>
 </body>
