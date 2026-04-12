@@ -1,6 +1,6 @@
 # 排序演算法分析報告
 
-**學號：** XXXXXXX  
+**學號：** 11428135  
 **姓名：** 陳宗譽  
 **模擬頁面：** https://chenc0ffee.github.io/sort_report/
 
