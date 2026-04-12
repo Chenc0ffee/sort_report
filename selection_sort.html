@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>選擇排序法</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>選擇排序法</h1>
+        <p>輸入一串數字（用逗號分隔），點擊排序按鈕來執行選擇排序。</p>
+        <input type="text" id="inputArray" placeholder="例如: 5,3,8,4,2" value="5,3,8,4,2">
+        <button onclick="selectionSort()">排序</button>
+        <div id="output"></div>
+    </div>
+
+    <script>
+        function selectionSort() {
+            // 獲取輸入值
+            const input = document.getElementById('inputArray').value;
+            const arr = input.split(',').map(num => parseInt(num.trim())).filter(num => !isNaN(num));
+            
+            if (arr.length === 0) {
+                document.getElementById('output').innerHTML = '請輸入有效的數字。';
+                return;
+            }
+
+            // 顯示原始陣列
+            document.getElementById('output').innerHTML = '<p>原始陣列: ' + arr.join(', ') + '</p>';
+
+            // 選擇排序實現
+            let n = arr.length;
+            for (let i = 0; i < n - 1; i++) {
+                let minIndex = i;
+                for (let j = i + 1; j < n; j++) {
+                    if (arr[j] < arr[minIndex]) {
+                        minIndex = j;
+                    }
+                }
+                // 交換元素
+                if (minIndex !== i) {
+                    let temp = arr[i];
+                    arr[i] = arr[minIndex];
+                    arr[minIndex] = temp;
+                }
+            }
+
+            // 顯示排序後的陣列
+            document.getElementById('output').innerHTML += '<p>排序後陣列: ' + arr.join(', ') + '</p>';
+        }
+    </script>
+</body>
+</html>
